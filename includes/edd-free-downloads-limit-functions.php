@@ -32,5 +32,9 @@ function edd_free_downloads_limit_get_remaining( $user_ip = '' ) {
 		)
 	);
 
-	return intval( $purchases );
+	$allotted = EDD_FREE_DOWNLOAD_PURCHASE_LIMIT;
+
+	$remaining = intval( $allotted ) - intval( $purchases );
+
+	return $remaining > 0 ? $remaining : 0;
 }

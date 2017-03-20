@@ -14,7 +14,7 @@ function edd_free_downloads_limit_disable_download() {
 
 	$download = new EDD_Download( $download_id );
 
-	if( $download && $download->is_free() && edd_free_downloads_limit_get_remaining() >= EDD_FREE_DOWNLOAD_PURCHASE_LIMIT ) {
+	if( $download && $download->is_free() && edd_free_downloads_limit_get_remaining() < 1 ) {
 		wp_redirect( apply_filters( 'edd_free_downloads_limit_reached_redirect', get_permalink( $download_id ) ) );
 		exit;
 	}
@@ -55,18 +55,19 @@ add_action( 'edd_free_downloads_process_download', 'edd_free_downloads_limit_dis
 
 
 /**
- * Remove the purchase / download link if users free download limit is reached
+ * Removes the download form if user has no free downloads remaining
  * 
+ * @param string $purchase_form 
+ * @param array $args 
  * @return type
  */
-function edd_free_downloads_limit_purchase_template() {
-	if( ! is_singular( 'download' ) || is_admin() )
-		return;
+function edd_free_downloads_limit_purchase_link( $purchase_form, $args ) {
+	$download = new EDD_Download( $args['download_id'] );
 
-	$download = new EDD_Download( get_the_ID() );
-
-	if( $download && $download->is_free() && edd_free_downloads_limit_get_remaining() >= EDD_FREE_DOWNLOAD_PURCHASE_LIMIT ) {
-		remove_action( 'edd_after_download_content', 'edd_append_purchase_link' );
+	if( $download && $download->is_free() && edd_free_downloads_limit_get_remaining() < 1 ) {
+		return '';
 	}
+
+	return $purchase_form;
 }
-add_action( 'the_post', 'edd_free_downloads_limit_purchase_template' );
+add_filter( 'edd_purchase_download_form', 'edd_free_downloads_limit_purchase_link', 15, 2 );
